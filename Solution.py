@@ -12,7 +12,7 @@ class Solution:
         for intersection_id, inc_streets_num, schedule in self.schedules:
             solution += str(intersection_id) + '\n' + str(inc_streets_num) + '\n'
 
-            for plan in schedule:
-                solution += " ".join(plan) + '\n'
+            for name, duration in schedule.items():
+                solution += name + ' ' + str(duration) + '\n'
 
         return solution

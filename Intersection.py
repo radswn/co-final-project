@@ -1,7 +1,7 @@
 class Intersection:
     def __init__(self, id):
         self.id = id
-        self.schedule = []
+        self.schedule = dict()
         self.streets_in = []
         self.streets_out = []
 
