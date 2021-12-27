@@ -1,5 +1,5 @@
 class Graph:
-    def __init__(self, d, i, s, v, f, intersections, streets, cars):
+    def __init__(self, d, i, s, v, f, intersections: dict, streets: dict, cars: list):
         self.duration = d
         self.intersections_nr = i
         self.streets_nr = s
