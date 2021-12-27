@@ -8,3 +8,6 @@ class Graph:
         self.intersections = intersections
         self.streets = streets
         self.cars = cars
+        # queue up cars
+        for car in self.cars:
+            self.streets[car.next].queue.append(car.id)
