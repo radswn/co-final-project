@@ -1,6 +1,6 @@
 class Car:
-    def __init__(self, id, route):
+    def __init__(self, id, route: list):
         self.id = id
         self.route = route
-        self.next = self.route[0]
-        
+        self.remaining_time = 0
+        self.next = self.route.pop(0)
