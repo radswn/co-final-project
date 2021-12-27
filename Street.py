@@ -10,7 +10,7 @@ class Street:
         self.end_id = end_id
         self.queue = []
 
-    def check_and_add(self, intersections: dict):
+    def setup_intersections(self, intersections: dict):
         if self.start_id in intersections.keys():
             intersections.get(self.start_id).add_street_out(self.id)
         else:

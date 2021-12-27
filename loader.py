@@ -26,7 +26,7 @@ def load_data(load_function) -> Graph:
 
         street = Street(_, name, l, b, e)
         streets[street.name] = street
-        street.check_and_add(intersections)
+        street.setup_intersections(intersections)
 
     for _ in range(v):
         line = load_function().split()
