@@ -14,7 +14,7 @@ def load_stdin():
 
 def load_data(load_function) -> Graph:
     cars = []
-    streets = []
+    streets = dict()
     intersections = dict()
 
     d, i, s, v, f = map(int, load_function().split())
@@ -25,7 +25,7 @@ def load_data(load_function) -> Graph:
         l = int(line[3])
 
         street = Street(_, name, l, b, e)
-        streets.append(street)
+        streets[street.name] = street
         street.check_and_add(intersections)
 
     for _ in range(v):
