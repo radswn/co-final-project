@@ -12,11 +12,11 @@ class Street:
 
     def setup_intersections(self, intersections: dict):
         if self.start_id in intersections.keys():
-            intersections.get(self.start_id).add_street_out(self.id)
+            intersections.get(self.start_id).add_street_out(self.name)
         else:
             intersections[self.start_id] = Intersection(self.start_id)
 
         if self.end_id in intersections.keys():
-            intersections.get(self.end_id).add_street_in(self.id)
+            intersections.get(self.end_id).add_street_in(self.name)
         else:
             intersections[self.end_id] = Intersection(self.end_id)
