@@ -3,7 +3,7 @@ class Graph:
         self.duration = d
         self.intersections_nr = i
         self.streets_nr = s
-        self.car_nr = v
+        self.cars_nr = v
         self.points = f
         self.intersections = intersections
         self.streets = streets

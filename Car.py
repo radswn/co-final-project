@@ -3,4 +3,4 @@ class Car:
         self.id = id
         self.route = route
         self.remaining_time = 0
-        self.next = self.route.pop(0)
+        self.next = self.route[0]
