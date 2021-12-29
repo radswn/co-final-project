@@ -73,13 +73,6 @@ class Graph:
     def get_cars_current_street(self, car: Car) -> Street:
         return self.streets[car.current_street]
 
-    def priority_up(self, street_name, priority_dict):
-        if street_name in priority_dict.keys():
-            priority_dict[street_name] += 1
-
-        else:
-            priority_dict[street_name] = 1
-
     def set_priorities(self, order: int, priority_of_streets):
         for car in self.cars:
             full_route = [car.current_street] + car.route
@@ -87,10 +80,14 @@ class Graph:
             if car.car_is_done(order):
                 continue
 
-            self.priority_up(full_route[order], priority_of_streets[order])
+            priority_up(full_route[order], priority_of_streets[order])
 
         return priority_of_streets
 
     def get_longest_q_street(self, order: int, priority_of_streets):
         street_name = max(priority_of_streets[order], key=priority_of_streets[order].get)
         return self.streets[street_name]
+
+
+def priority_up(street_name, priority_dict):
+    priority_dict[street_name] += 1
