@@ -2,8 +2,8 @@ from Intersection import Intersection
 
 
 class Solution:
-    def __init__(self, a: int, intersections: dict[int, Intersection]):
-        self.a = a
+    def __init__(self, intersections: dict[int, Intersection]):
+        self.a = sum([1 for inter in intersections.values() if inter.schedule is not None])
         self.schedules = [(k, len(v.schedule), v.schedule) for k, v in intersections.items()]
 
     def __str__(self):
