@@ -5,7 +5,7 @@ class Car:
         self.remaining_time = 0
         self.current_street = self.route.pop(0)
 
-    def has_finished(self):
+    def has_finished(self) -> bool:
         return len(self.route) == 0
 
     def drive_to_next_street(self, next_street_travel_time):
@@ -15,8 +15,8 @@ class Car:
     def get_next_street_name(self):
         return self.route[0]
 
-    def is_in_a_queue(self):
+    def is_in_a_queue(self) -> bool:
         return self.remaining_time == 0
 
-    def is_approaching_queue(self):
+    def is_approaching_queue(self) -> bool:
         return self.remaining_time == 1
