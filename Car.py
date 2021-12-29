@@ -5,6 +5,9 @@ class Car:
         self.remaining_time = 0
         self.current_street = self.route.pop(0)
 
+    def full_route(self):
+        return [self.current_street] + self.route
+
     def has_finished(self) -> bool:
         return len(self.route) == 0
 
@@ -22,6 +25,4 @@ class Car:
         return self.remaining_time == 1
 
     def car_is_done(self, order):
-        if len([self.current_street] + self.route) <= order + 1:
-            return True
-        return False
+        return len(self.route) <= order
