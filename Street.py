@@ -1,3 +1,4 @@
+from Car import Car
 from Intersection import Intersection
 
 
@@ -8,7 +9,7 @@ class Street:
         self.time = time
         self.start_id = start_id
         self.end_id = end_id
-        self.queue = []
+        self.queue = [int]
 
     def setup_intersections(self, intersections: dict):
         if self.start_id in intersections.keys():
@@ -20,3 +21,9 @@ class Street:
             intersections.get(self.end_id).add_street_in(self.name)
         else:
             intersections[self.end_id] = Intersection(self.end_id)
+
+    def add_to_queue(self, car: Car):
+        self.queue.append(car.id)
+
+    def remove_from_queue(self, car: Car):
+        self.queue.remove(car.id)
