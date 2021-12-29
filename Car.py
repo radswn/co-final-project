@@ -20,3 +20,8 @@ class Car:
 
     def is_approaching_queue(self) -> bool:
         return self.remaining_time == 1
+
+    def car_is_done(self, order):
+        if len([self.current_street] + self.route) <= order + 1:
+            return True
+        return False
