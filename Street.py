@@ -11,6 +11,13 @@ class Street:
         self.end_id = end_id
         self.queue = [int]
 
+    def __str__(self):
+        return (f"""
+    Street
+      name: {self.name}
+      travel_time: {self.time}
+      queue: {self.queue}""")
+
     def setup_intersections(self, intersections: dict):
         if self.start_id in intersections.keys():
             intersections.get(self.start_id).add_street_out(self.name)
@@ -31,3 +38,6 @@ class Street:
     def in_schedule(self, inter: Intersection):
         if self in inter.schedule.keys():
             return True
+
+    def is_car_first_in_queue(self, car: Car):
+        return self.queue[0] == car.id

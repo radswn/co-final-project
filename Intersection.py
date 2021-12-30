@@ -11,6 +11,14 @@ class Intersection:
         self.timetable = [str]
         self.period = 0
 
+    def __str__(self):
+        return (f"""
+    Intersection
+      id: {self.id}
+      schedule: {self.schedule.items()}
+      streets_in: {self.streets_in}
+      current_green: {self.current_green}""")
+
     def add_street_in(self, street_name):
         self.streets_in.append(street_name)
 
@@ -25,3 +33,6 @@ class Intersection:
     def change_light(self, current_time):
         current_period_time = current_time % self.period
         self.current_green = self.timetable[current_period_time]
+
+    def empty_schedule(self) -> bool:
+        return self.schedule == {}
