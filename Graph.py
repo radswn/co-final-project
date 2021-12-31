@@ -27,9 +27,13 @@ class Graph:
     Graph
       duration: {self.duration}
       current_time: {self.current_time}
-      score: {self.score}""")
+      score: {self.score}
+      cars: {''.join(car.__str__() for car in self.cars)}
+      intersections: {''.join(intersection.__str__() for intersection in self.intersections.values())}
+      streets: {''.join(street.__str__() for street in self.streets.values())}""")
 
     def queue_car(self, car: Car):
+        print("Car {} moved to queue on street {}".format(car.id, car.current_street))
         self.get_cars_next_street(car).add_to_queue(car)
 
     def evaluate(self) -> int:
@@ -38,6 +42,7 @@ class Graph:
         return self.score
 
     def do_iteration(self):
+        print("Current time: {}".format(self.current_time))
         for intersection in self.intersections.values():
             if not intersection.empty_schedule():
                 intersection.change_light(self.current_time)
@@ -57,9 +62,13 @@ class Graph:
                     next_street = self.streets[car.get_next_street_name()]
                     self.leave_queue(car)
                     car.drive_to_next_street(next_street.time)
+                else:
+                    print("Car {} is waiting on street {}".format(car.id, car.current_street))
+        elif car.is_approaching_queue():
+            car.remaining_time -= 1
+            self.queue_car(car)
         else:
-            if car.is_approaching_queue():
-                self.queue_car(car)
+            print("Car {} is riding down the {} street".format(car.id, car.current_street))
             car.remaining_time -= 1
 
     def has_green_light(self, street) -> bool:
@@ -67,6 +76,7 @@ class Graph:
         return intersection.current_green == street.name
 
     def end_cars_travel(self, car: Car):
+        print("Car {} has finished".format(car.id))
         self.leave_queue(car)
         self.cars.remove(car)
         self.add_score()
@@ -75,7 +85,7 @@ class Graph:
         self.score += self.points + (self.duration - self.current_time)
 
     def get_cars_next_street(self, car: Car) -> Street:
-        return self.streets[car.get_next_street_name()]
+        return self.streets[car.current_street]
 
     def leave_queue(self, car: Car):
         self.get_cars_current_street(car).remove_from_queue(car)

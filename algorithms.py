@@ -1,5 +1,4 @@
 from collections import defaultdict, OrderedDict
-from math import ceil
 from time import time
 
 from Graph import Graph
@@ -65,7 +64,7 @@ def greedy2(graph: Graph):
         for street_in in intersection.streets_in:
             appearances = street_appearance_count[street_in]
             if appearances > 0:
-                schedule[street_in] = ceil(appearances / 2)
+                schedule[street_in] = appearances
 
         intersection.set_schedule(schedule)
 

@@ -5,18 +5,19 @@ class Intersection:
     def __init__(self, id):
         self.id = id
         self.schedule = OrderedDict()
-        self.streets_in = [str]
-        self.streets_out = [str]
+        self.streets_in = []
+        self.streets_out = []
         self.current_green = None
-        self.timetable = [str]
+        self.timetable = []
         self.period = 0
 
     def __str__(self):
         return (f"""
     Intersection
       id: {self.id}
-      schedule: {self.schedule.items()}
-      streets_in: {self.streets_in}
+      schedule: {' '.join(k + ': ' + str(v) for k, v in self.schedule.items())}
+      streets_in: {' '.join(self.streets_in)}
+      timetable: {' '.join(self.timetable)}
       current_green: {self.current_green}""")
 
     def add_street_in(self, street_name):
@@ -29,8 +30,12 @@ class Intersection:
         self.schedule = schedule
         self.period = sum(schedule.values())
         [self.timetable.extend([k] * v) for k, v in schedule.items()]
+        self.current_green = self.timetable[0]
 
     def change_light(self, current_time):
+        # nie wiem, czy to jest potrzebne, ale zostawię póki co
+        if self.empty_schedule():
+            return
         current_period_time = current_time % self.period
         self.current_green = self.timetable[current_period_time]
 
