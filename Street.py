@@ -34,8 +34,9 @@ class Street:
         self.queue.remove(car.id)
 
     def in_schedule(self, inter: Intersection):
-        if self in inter.schedule.keys():
+        if self.name in inter.schedule.keys():
             return True
+        return False
 
     def is_car_first_in_queue(self, car: Car):
         return self.queue[0] == car.id

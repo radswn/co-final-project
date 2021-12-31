@@ -18,6 +18,9 @@ def greedy(graph: Graph) -> Solution:
 
         priority_of_streets = graph.set_priorities(order, priority_of_streets)
         scheduling(graph, order, priority_of_streets)
+    for intersection in graph.intersections.values():
+        if intersection.schedule != {}:
+            intersection.set_schedule(intersection.schedule)
 
     return Solution(graph.intersections)
 
@@ -40,7 +43,7 @@ def scheduling(graph: Graph, order: int, priority_of_streets):
         elif migrate_values(inter, street, order, priority_of_streets, value):
             continue
         else:
-            inter.schedule[street] = value
+            inter.schedule[street.name] = value
 
 
 def is_time_ok(timer_start) -> bool:
