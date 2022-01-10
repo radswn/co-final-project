@@ -1,9 +1,12 @@
 from collections import defaultdict, OrderedDict
 from time import time
+from copy import deepcopy
+import random
 
 from Graph import Graph
 from Solution import Solution
-
+from Street import Street
+from Intersection import Intersection
 TIME_LIMIT = 300
 
 
@@ -72,6 +75,59 @@ def greedy2(graph: Graph):
         intersection.set_schedule(schedule)
 
     return Solution(graph.intersections)
+
+
+def get_state_zero(graph: Graph):
+    for intersection in graph.intersections.values():
+        schedule = OrderedDict()
+        for street_in in intersection.streets_in:
+            schedule[street_in] = 1
+        intersection.set_schedule(schedule)
+
+
+def random_neighbour(graph: Graph):
+    intersection = random.choice(list(graph.intersections.values()))
+    schedule = intersection.schedule
+    street = random.choice(list(schedule.keys()))
+    schedule[street] += 1
+    intersection.set_schedule(schedule)
+    return intersection, street
+
+
+def reverse_changes(graph: Graph, intersection: Intersection, street):
+    schedule = intersection.schedule
+    schedule[street] -= 1
+    intersection.set_schedule(schedule)
+
+
+def hill_climbing(graph: Graph) -> Graph:
+    timer_start = time()
+    get_state_zero(graph)
+    backup = deepcopy(graph)
+    best_score = graph.evaluate()
+    graph = backup
+    current_score = best_score
+    backup_before_neighbour = graph
+    while True:
+        for _ in range(100):
+            if not is_time_ok(timer_start):
+                graph = backup_before_neighbour
+                return graph
+            backup_before_neighbour = deepcopy(graph)
+            intersection, street = random_neighbour(graph)
+            neighbour_backup = deepcopy(graph)
+            neighbour_score = graph.evaluate()
+            if neighbour_score > best_score:
+                best_score = neighbour_score
+                graph = neighbour_backup
+            else:
+                reverse_changes(graph, intersection, street)
+                graph = backup_before_neighbour
+        if current_score == best_score:
+            graph = backup_before_neighbour
+            return graph
+        else:
+            current_score = best_score
 
 
 def sophisticated():
