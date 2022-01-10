@@ -1,7 +1,13 @@
 from algorithms import *
 from loader import load_text_file
+from tests import run_all_tests
 
 LETTERS = ['a', 'b', 'c', 'd', 'e', 'f']
+TEST = True
+
+if TEST:
+    run_all_tests()
+    exit()
 
 graphs = {
     letter: load_text_file("resources\\{}.txt".format(letter)) for letter in LETTERS
