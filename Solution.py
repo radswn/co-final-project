@@ -1,17 +1,17 @@
-from Intersection import Intersection
+from typing import Dict
 
 
 class Solution:
-    def __init__(self, intersections: dict[int, Intersection]):
-        self.a = sum([1 for inter in intersections.values() if inter.schedule != {}])
-        self.schedules = [(k, len(v.schedule), v.schedule) for k, v in intersections.items()]
+    def __init__(self, schedules: Dict[int, Dict[str, int]]):
+        self.a = sum([1 for schedule in schedules.values() if schedule != {}])
+        self.schedules = schedules
 
     def __str__(self):
         solution = str(self.a) + '\n'
 
-        for intersection_id, inc_streets_num, schedule in self.schedules:
+        for intersection_id, schedule in self.schedules:
             if schedule != {}:
-                solution += str(intersection_id) + '\n' + str(inc_streets_num) + '\n'
+                solution += str(intersection_id) + '\n' + str(len(schedule.values())) + '\n'
 
                 for name, duration in schedule.items():
                     solution += name + ' ' + str(duration) + '\n'

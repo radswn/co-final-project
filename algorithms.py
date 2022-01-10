@@ -77,12 +77,13 @@ def greedy2(graph: Graph):
     return Solution(graph.intersections)
 
 
-def get_state_zero(graph: Graph):
-    for intersection in graph.intersections.values():
-        schedule = OrderedDict()
-        for street_in in intersection.streets_in:
-            schedule[street_in] = 1
-        intersection.set_schedule(schedule)
+def get_state_zero(graph: Graph) -> Solution:
+    schedule = {}
+    for intersection in graph.intersections.keys():
+        schedule[intersection] = OrderedDict()
+        for street_in in graph.intersections[intersection].streets_in:
+            schedule[intersection][street_in] = 1
+    return Solution(schedule)
 
 
 def random_neighbour(graph: Graph):
@@ -106,6 +107,34 @@ def hill_climbing(graph: Graph) -> Graph:
     backup = deepcopy(graph)
     best_score = graph.evaluate()
     graph = backup
+    current_score = best_score
+    backup_before_neighbour = graph
+    while True:
+        for _ in range(100):
+            if not is_time_ok(timer_start):
+                graph = backup_before_neighbour
+                return graph
+            backup_before_neighbour = deepcopy(graph)
+            intersection, street = random_neighbour(graph)
+            neighbour_backup = deepcopy(graph)
+            neighbour_score = graph.evaluate()
+            if neighbour_score > best_score:
+                best_score = neighbour_score
+                graph = neighbour_backup
+            else:
+                reverse_changes(graph, intersection, street)
+                graph = backup_before_neighbour
+        if current_score == best_score:
+            graph = backup_before_neighbour
+            return graph
+        else:
+            current_score = best_score
+
+
+def hill_climbing_app(graph: Graph) -> Graph:
+    timer_start = time()
+    get_state_zero(graph)
+    best_score = approximate_fitness(graph, Solution(graph.intersections))
     current_score = best_score
     backup_before_neighbour = graph
     while True:
