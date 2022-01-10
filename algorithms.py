@@ -167,7 +167,7 @@ def approximate_fitness(graph: Graph, solution: Solution) -> float:
     percentage_schedules = dict()
     result = 0
 
-    for intersection_id, inc_streets_num, schedule in solution.schedules:
+    for intersection_id, schedule in solution.schedules.items():
         time_sum = sum(schedule.values())
         for street, seconds in schedule.items():
             percentage_schedules[street] = seconds / time_sum
