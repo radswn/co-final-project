@@ -9,7 +9,7 @@ class Solution:
     def __str__(self):
         solution = str(self.a) + '\n'
 
-        for intersection_id, schedule in self.schedules:
+        for intersection_id, schedule in self.schedules.items():
             if schedule != {}:
                 solution += str(intersection_id) + '\n' + str(len(schedule.values())) + '\n'
 

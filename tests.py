@@ -1,18 +1,17 @@
-import loader
-from algorithms import greedy
+from Car import Car
+from Solution import Solution
 
 
-def run_algo(algo, case):
-    algo(case)
-    for inter in case.intersections:
-        print(inter, case.intersections[inter].schedule)
+def run_all_tests():
+    should_create_correct_solution()
+    should_return_correct_path()
 
 
-def get_solution(algorithm, graph):
-    solution = algorithm(graph)
+def should_return_correct_path():
+    car = Car(0, ['a', 'b', 'c'])
+    assert car.full_route() == ['a', 'b']
+
+
+def should_create_correct_solution():
+    solution = Solution({0: {'abc': 2, 'bcd': 3}, 1: {'cde': 1, 'def': 4}})
     print(solution)
-
-
-# run_algo(greedy, loader.load_text_file('resources\\a.txt'))
-# run_algo(greedy, loader.load_text_file('resources\\d.txt'))
-# żeby zobaczyć działanie time limit daj time limit np na 3 - na d.txt powinno dać krótsze schedule
