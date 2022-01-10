@@ -1,5 +1,8 @@
+from typing import List
+
+
 class Car:
-    def __init__(self, id, route: list):
+    def __init__(self, id, route: List[str]):
         self.id = id
         self.route = route
         self.remaining_time = 0
@@ -14,7 +17,7 @@ class Car:
       route: {' '.join(self.route)}""")
 
     def full_route(self):
-        return [self.current_street] + self.route
+        return [self.current_street] + self.route[:-1]
 
     def has_finished(self) -> bool:
         return len(self.route) == 0 and self.remaining_time == 0

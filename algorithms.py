@@ -132,3 +132,22 @@ def hill_climbing(graph: Graph) -> Graph:
 
 def sophisticated():
     ...
+
+
+def approximate_fitness(graph: Graph, solution: Solution) -> float:
+    percentage_schedules = dict()
+    result = 0
+
+    for intersection_id, inc_streets_num, schedule in solution.schedules:
+        time_sum = sum(schedule.values())
+        for street, seconds in schedule.items():
+            percentage_schedules[street] = seconds / time_sum
+    # print(percentage_schedules)
+    for car in graph.cars:
+        route = car.full_route()
+        chance_for_passing = 1
+        for street in route:
+            chance_for_passing *= percentage_schedules[street]
+        result += chance_for_passing * graph.points
+
+    return result

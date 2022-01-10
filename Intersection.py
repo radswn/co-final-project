@@ -30,7 +30,8 @@ class Intersection:
         self.schedule = schedule
         self.period = sum(schedule.values())
         [self.timetable.extend([k] * v) for k, v in schedule.items()]
-        self.current_green = self.timetable[0]
+        if len(self.timetable) > 0:
+            self.current_green = self.timetable[0]
 
     def change_light(self, current_time):
         # nie wiem, czy to jest potrzebne, ale zostawię póki co
