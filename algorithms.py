@@ -86,13 +86,13 @@ def get_state_zero(graph: Graph) -> Solution:
     return Solution(schedule)
 
 
-def random_neighbour(graph: Graph):
-    intersection = random.choice(list(graph.intersections.values()))
-    schedule = intersection.schedule
+def random_neighbour(sol: Solution) -> Solution:
+    solution = deepcopy(sol)
+    intersection = random.choice(list(solution.schedules.keys()))
+    schedule = solution.schedules[intersection]
     street = random.choice(list(schedule.keys()))
     schedule[street] += 1
-    intersection.set_schedule(schedule)
-    return intersection, street
+    return solution
 
 
 def reverse_changes(graph: Graph, intersection: Intersection, street):
@@ -101,62 +101,31 @@ def reverse_changes(graph: Graph, intersection: Intersection, street):
     intersection.set_schedule(schedule)
 
 
-def hill_climbing(graph: Graph) -> Graph:
+def hill_climbing(graph: Graph) -> Solution:
     timer_start = time()
-    get_state_zero(graph)
-    backup = deepcopy(graph)
-    best_score = graph.evaluate()
-    graph = backup
+    solution_zero = get_state_zero(graph)
+    best_score = approximate_fitness(graph, solution_zero)
+    current_solution = solution_zero
     current_score = best_score
-    backup_before_neighbour = graph
+    best_solution = deepcopy(current_solution)
     while True:
-        for _ in range(100):
+        for _ in range(10):
+
             if not is_time_ok(timer_start):
-                graph = backup_before_neighbour
-                return graph
-            backup_before_neighbour = deepcopy(graph)
-            intersection, street = random_neighbour(graph)
-            neighbour_backup = deepcopy(graph)
-            neighbour_score = graph.evaluate()
+                return current_solution
+
+            neighbour = random_neighbour(current_solution)
+            neighbour_score = approximate_fitness(graph, neighbour)
+
             if neighbour_score > best_score:
                 best_score = neighbour_score
-                graph = neighbour_backup
-            else:
-                reverse_changes(graph, intersection, street)
-                graph = backup_before_neighbour
+                best_solution = neighbour
+
         if current_score == best_score:
-            graph = backup_before_neighbour
-            return graph
+            return current_solution
         else:
             current_score = best_score
-
-
-def hill_climbing_app(graph: Graph) -> Graph:
-    timer_start = time()
-    get_state_zero(graph)
-    best_score = approximate_fitness(graph, Solution(graph.intersections))
-    current_score = best_score
-    backup_before_neighbour = graph
-    while True:
-        for _ in range(100):
-            if not is_time_ok(timer_start):
-                graph = backup_before_neighbour
-                return graph
-            backup_before_neighbour = deepcopy(graph)
-            intersection, street = random_neighbour(graph)
-            neighbour_backup = deepcopy(graph)
-            neighbour_score = graph.evaluate()
-            if neighbour_score > best_score:
-                best_score = neighbour_score
-                graph = neighbour_backup
-            else:
-                reverse_changes(graph, intersection, street)
-                graph = backup_before_neighbour
-        if current_score == best_score:
-            graph = backup_before_neighbour
-            return graph
-        else:
-            current_score = best_score
+            current_solution = best_solution
 
 
 def sophisticated():

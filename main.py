@@ -2,8 +2,9 @@ from algorithms import *
 from loader import load_text_file
 from tests import run_all_tests
 
-LETTERS = ['a', 'b', 'c', 'd', 'e', 'f']
-TEST = True
+# LETTERS = ['a', 'b', 'c', 'd', 'e', 'f']
+LETTERS = ['a', 'b', 'c', 'e', 'f']
+TEST = False
 
 if TEST:
     run_all_tests()
@@ -15,7 +16,7 @@ graphs = {
 
 start = time()
 solutions = {
-    letter: greedy2(graphs[letter]) for letter in LETTERS
+    letter: hill_climbing(graphs[letter]) for letter in LETTERS
 }
 stop = time()
 print(f'algorithm execution took {stop - start} seconds')
