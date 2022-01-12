@@ -24,7 +24,6 @@ class Car:
 
     def drive_to_next_street(self, next_street_travel_time):
         self.current_street = self.route.pop(0)
-        print("Car {} drove to the next street {}".format(self.id, self.current_street))
         self.remaining_time = next_street_travel_time
 
     def get_next_street_name(self):
