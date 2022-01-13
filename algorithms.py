@@ -262,10 +262,11 @@ def approximate_fitness(graph: Graph, solution: Solution) -> float:
             multiplier, max_waiting_time = percentage_schedules[street]
             wait_time_sum = sum([_ for _ in range(max_waiting_time + 1)])
             expected_travel_time += multiplier * wait_time_sum
-            expected_travel_time += graph.streets[street].time
+            if street != car.current_street:
+                expected_travel_time += graph.streets[street].time
         expected_travel_time += graph.streets[car.route[-1]].time
 
-        result += graph.points + (graph.duration - expected_travel_time)
+        result += max(graph.points + (graph.duration - expected_travel_time), 0)
     return result
 
 
