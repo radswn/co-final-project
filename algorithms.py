@@ -135,7 +135,7 @@ def random_individual(graph: Graph) -> Solution:
     for intersection in graph.intersections.keys():
         streets = [s for s in graph.intersections[intersection].streets_in]
         np.random.permutation(streets)
-        schedule[intersection] = {street: random.randint(1, 6) for street in streets}
+        schedule[intersection] = {street: random.randint(1, 4) for street in streets}
 
     return Solution(schedule)
 
@@ -160,13 +160,13 @@ def crossover(sol1: Solution, sol2: Solution) -> (Solution, Solution):
     child1_schedule = {}
     child2_schedule = {}
 
-    for inter in solution1.schedules:
-        # trochę uproszczona wersja crossovera, potem możemy zmienić na bardziej złożoną,
-        # na razie nie chciałem zabić złożoności, więc wstępnie jest jak niżej
-        child1_schedule[inter] = {street: solution1.schedules[inter][street] for street in
-                                  solution2.schedules[inter].keys()}
-        child2_schedule[inter] = {street: solution2.schedules[inter][street] for street in
-                                  solution1.schedules[inter].keys()}
+    for _, (inter_k, inter_v) in enumerate(solution1.schedules.items()):
+        if _ < len(solution1.schedules.keys()):
+            child1_schedule[inter_k] = solution1.schedules[inter_k]
+            child2_schedule[inter_k] = solution2.schedules[inter_k]
+        else:
+            child1_schedule[inter_k] = solution2.schedules[inter_k]
+            child2_schedule[inter_k] = solution1.schedules[inter_k]
 
     return Solution(child1_schedule), Solution(child2_schedule)
 
@@ -266,7 +266,7 @@ def approximate_fitness(graph: Graph, solution: Solution) -> float:
                 expected_travel_time += graph.streets[street].time
         expected_travel_time += graph.streets[car.route[-1]].time
 
-        result += max(graph.points + (graph.duration - expected_travel_time), 0)
+        result += max(graph.points + (graph.duration - expected_travel_time), 1)
     return result
 
 
