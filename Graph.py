@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from typing import Dict, List
 
 from Car import Car
@@ -20,6 +21,7 @@ class Graph:
         self.score = 0
         self.current_time = 0
         self.debug = False
+        self.busy_intersections = set()
 
         for car in self.cars:
             self.queue_car(car)
@@ -37,9 +39,11 @@ class Graph:
     def queue_car(self, car: Car):
         if self.debug:
             print("Car {} moved to queue on street {}".format(car.id, car.current_street))
+        self.busy_intersections.add(self.intersections[self.get_cars_current_street(car).end_id])
         self.get_cars_next_street(car).add_to_queue(car)
 
-    def evaluate(self) -> int:
+    def evaluate(self, solution: Solution) -> int:
+        self.set_schedules(solution)
         for _ in range(self.duration):
             self.do_iteration()
         return self.score
@@ -47,9 +51,8 @@ class Graph:
     def do_iteration(self):
         if self.debug:
             print("Current time: {}".format(self.current_time))
-        for intersection in self.intersections.values():
-            if not intersection.empty_schedule():
-                intersection.change_light(self.current_time)
+        for intersection in self.busy_intersections:
+            intersection.change_light(self.current_time)
 
         for car in self.cars:
             self.drive(car)
@@ -97,6 +100,13 @@ class Graph:
         return self.streets[car.current_street]
 
     def leave_queue(self, car: Car):
+        is_intersection_empty = True
+        intersection = self.get_streets_intersection(car.current_street)
+        for street_name in intersection.streets_in:
+            if self.streets[street_name].is_queue_not_empty():
+                is_intersection_empty = False
+        if is_intersection_empty:
+            self.busy_intersections.remove(intersection)
         self.get_cars_current_street(car).remove_from_queue(car)
 
     def get_cars_current_street(self, car: Car) -> Street:
@@ -118,8 +128,11 @@ class Graph:
         return self.streets[street_name]
 
     def set_schedules(self, solution: Solution):
-        for inter_id, schedule in solution.schedules:
-            self.intersections[inter_id].set_schedule(schedule)
+        for inter_id, schedule in solution.schedules.items():
+            self.intersections[inter_id].set_schedule(OrderedDict(schedule))
+
+    def get_streets_intersection(self, street_name):
+        return self.intersections[self.streets[street_name].end_id]
 
 
 def priority_up(street_name, priority_dict):

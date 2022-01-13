@@ -38,3 +38,6 @@ class Street:
 
     def is_car_first_in_queue(self, car: Car) -> bool:
         return self.queue[0] == car.id
+
+    def is_queue_not_empty(self):
+        return len(self.queue) > 0
