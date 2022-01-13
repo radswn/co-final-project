@@ -1,4 +1,5 @@
 .idea
 env
 resources/__MACOSX
+solutions/
 __pycache__/

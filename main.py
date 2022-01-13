@@ -26,5 +26,7 @@ results = {
     letter: approximate_fitness(graphs[letter], solutions[letter]) for letter in LETTERS
 }
 stop = time()
+
+[save_to_file(letter, solution) for letter, solution in solutions.items()]
 print(results)
 print(f"evaluation took {stop - start} seconds")

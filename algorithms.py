@@ -1,13 +1,14 @@
-from collections import defaultdict, OrderedDict
-from time import time
-from copy import deepcopy
 import random
+from collections import defaultdict, OrderedDict
+from copy import deepcopy
+from time import time
+
 import numpy as np
 
 from Graph import Graph
-from Solution import Solution
-from Street import Street
 from Intersection import Intersection
+from Solution import Solution
+
 TIME_LIMIT = 300
 
 
@@ -162,8 +163,10 @@ def crossover(sol1: Solution, sol2: Solution) -> (Solution, Solution):
     for inter in solution1.schedules:
         # trochę uproszczona wersja crossovera, potem możemy zmienić na bardziej złożoną,
         # na razie nie chciałem zabić złożoności, więc wstępnie jest jak niżej
-        child1_schedule[inter] = {street: solution1.schedules[inter][street] for street in solution2.schedules[inter].keys()}
-        child2_schedule[inter] = {street: solution2.schedules[inter][street] for street in solution1.schedules[inter].keys()}
+        child1_schedule[inter] = {street: solution1.schedules[inter][street] for street in
+                                  solution2.schedules[inter].keys()}
+        child2_schedule[inter] = {street: solution2.schedules[inter][street] for street in
+                                  solution1.schedules[inter].keys()}
 
     return Solution(child1_schedule), Solution(child2_schedule)
 
@@ -249,13 +252,23 @@ def approximate_fitness(graph: Graph, solution: Solution) -> float:
     for intersection_id, schedule in solution.schedules.items():
         time_sum = sum(schedule.values())
         for street, seconds in schedule.items():
-            percentage_schedules[street] = seconds / time_sum
-    # print(percentage_schedules)
-    for car in graph.cars:
-        route = car.full_route()
-        chance_for_passing = 1
-        for street in route:
-            chance_for_passing *= percentage_schedules[street]
-        result += chance_for_passing * graph.points
+            percentage_schedules[street] = (1 / time_sum, time_sum - seconds)
 
+    for car in graph.cars:
+        expected_travel_time = 0
+        route = car.full_route()
+
+        for street in route:
+            multiplier, max_waiting_time = percentage_schedules[street]
+            wait_time_sum = sum([_ for _ in range(max_waiting_time + 1)])
+            expected_travel_time += multiplier * wait_time_sum
+            expected_travel_time += graph.streets[street].time
+        expected_travel_time += graph.streets[car.route[-1]].time
+
+        result += graph.points + (graph.duration - expected_travel_time)
     return result
+
+
+def save_to_file(letter, solution: Solution):
+    with open(f'solutions\\{letter}.txt', 'w+') as file:
+        file.write(solution.__str__())
