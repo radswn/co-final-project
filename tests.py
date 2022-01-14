@@ -9,7 +9,7 @@ from Street import Street
 
 def run_all_tests():
     should_create_correct_solution()
-    should_return_correct_path()
+    should_return_correct_route()
     should_evaluate_test_correctly()
 
 
@@ -21,18 +21,13 @@ def should_evaluate_test_correctly():
         3: Intersection(3)
     }
     intersections[0].add_street_in('rue-de-londres')
-    intersections[0].add_street_out('rue-d-amsterdam')
 
     intersections[1].add_street_in('rue-d-amsterdam')
     intersections[1].add_street_in('rue-d-athenes')
-    intersections[1].add_street_out('rue-de-moscou')
 
     intersections[2].add_street_in('rue-de-moscou')
-    intersections[2].add_street_out('rue-de-londres')
-    intersections[2].add_street_out('rue-de-rome')
 
     intersections[3].add_street_in('rue-de-rome')
-    intersections[3].add_street_out('rue-d-athenes')
 
     streets = {
         'rue-de-londres': Street('rue-de-londres', 1, 2, 0),
@@ -68,10 +63,10 @@ def should_evaluate_test_correctly():
     assert result == 1002
 
 
-def should_return_correct_path():
+def should_return_correct_route():
     car = Car(0, ['a', 'b', 'c'])
     assert car.current_street == 'a'
-    assert car.full_route() == ['a', 'b']
+    assert car.route_without_last() == ['a', 'b']
 
 
 def should_create_correct_solution():

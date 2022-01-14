@@ -1,5 +1,5 @@
 import random
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 from copy import deepcopy
 from time import time
 
@@ -10,73 +10,12 @@ from Intersection import Intersection
 from Solution import Solution
 
 TIME_LIMIT = 300
-
-
-def greedy(graph: Graph) -> Solution:
-    timer_start = time()
-    longest_route = get_longest_route(graph)
-    priority_of_streets = [defaultdict(int) for _ in range(longest_route)]
-
-    for order in range(longest_route):
-        if not is_time_ok(timer_start):
-            break
-
-        priority_of_streets = graph.set_priorities(order, priority_of_streets)
-        scheduling(graph, order, priority_of_streets)
-    for intersection in graph.intersections.values():
-        if intersection.schedule != {}:
-            intersection.set_schedule(intersection.schedule)
-
-    return Solution(graph.intersections)
-
-
-def migrate_values(inter, street, order: int, priority_of_streets, value):
-    if len(inter.schedule) >= order + 1 and order + 1 < len(priority_of_streets):
-        priority_of_streets[order + 1][street.name] = value
-        return True
-    return False
-
-
-def scheduling(graph: Graph, order: int, priority_of_streets):
-    while len(priority_of_streets[order]) > 0:
-        street = graph.get_longest_q_street(order, priority_of_streets)
-        value = priority_of_streets[order].pop(street.name)
-        inter = graph.intersections[street.end_id]
-
-        if street.in_schedule(inter):
-            continue
-        elif migrate_values(inter, street, order, priority_of_streets, value):
-            continue
-        else:
-            inter.schedule[street.name] = value
+POPULATION_SIZE = 10
+GENERATIONS = 10
 
 
 def is_time_ok(timer_start) -> bool:
     return time() <= timer_start + TIME_LIMIT
-
-
-def get_longest_route(graph: Graph):
-    return max(len([car.current_street] + car.route) for car in graph.cars)
-
-
-def greedy2(graph: Graph):
-    street_appearance_count = defaultdict(int)
-
-    for car in graph.cars:
-        for street_name in car.full_route():
-            street_appearance_count[street_name] += 1
-
-    for intersection in graph.intersections.values():
-        schedule = OrderedDict()
-
-        for street_in in intersection.streets_in:
-            appearances = street_appearance_count[street_in]
-            if appearances > 0:
-                schedule[street_in] = appearances
-
-        intersection.set_schedule(schedule)
-
-    return Solution(graph.intersections)
 
 
 def get_state_zero(graph: Graph) -> Solution:
@@ -220,10 +159,6 @@ def define_new_best(graph: Graph, best_so_far: Solution, best_score: int, candid
         return best_so_far, best_score
 
 
-POPULATION_SIZE = 10
-GENERATIONS = 10
-
-
 def genetic_algorithm(graph: Graph) -> Solution:
     timer_start = time()
 
@@ -256,7 +191,7 @@ def approximate_fitness(graph: Graph, solution: Solution) -> float:
 
     for car in graph.cars:
         expected_travel_time = 0
-        route = car.full_route()
+        route = car.route_without_last()
 
         for street in route:
             multiplier, max_waiting_time = percentage_schedules[street]

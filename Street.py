@@ -20,7 +20,6 @@ class Street:
     def setup_intersections(self, intersections: dict):
         if self.start_id not in intersections.keys():
             intersections[self.start_id] = Intersection(self.start_id)
-        intersections.get(self.start_id).add_street_out(self.name)
 
         if self.end_id not in intersections.keys():
             intersections[self.end_id] = Intersection(self.end_id)
@@ -31,9 +30,6 @@ class Street:
 
     def remove_from_queue(self, car: Car):
         self.queue.remove(car.id)
-
-    def in_schedule(self, inter: Intersection) -> bool:
-        return self.name in inter.schedule.keys()
 
     def is_car_first_in_queue(self, car: Car) -> bool:
         return self.queue[0] == car.id

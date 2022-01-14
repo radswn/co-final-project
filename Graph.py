@@ -50,14 +50,14 @@ class Graph:
     def do_iteration(self):
         if self.debug:
             print("Current time: {}".format(self.current_time))
+
         for intersection in self.busy_intersections:
             intersection.change_light(self.current_time)
 
         for car in self.cars:
             self.drive(car)
 
-        for car in self.cars_to_remove:
-            self.cars.remove(car)
+        self.cars = self.cars.difference(self.cars_to_remove)
         self.cars_to_remove.clear()
 
         self.current_time += 1
@@ -89,30 +89,17 @@ class Graph:
     def leave_queue(self, car: Car):
         is_intersection_empty = True
         intersection = self.get_streets_intersection(car.current_street)
+
         for street_name in intersection.streets_in:
             if self.streets[street_name].is_queue_not_empty():
                 is_intersection_empty = False
         if is_intersection_empty:
             self.busy_intersections.remove(intersection)
+
         self.get_cars_current_street(car).remove_from_queue(car)
 
     def get_cars_current_street(self, car: Car) -> Street:
         return self.streets[car.current_street]
-
-    def set_priorities(self, order: int, priority_of_streets):
-        for car in self.cars:
-            full_route = [car.current_street] + car.route
-
-            if car.car_is_done(order):
-                continue
-
-            priority_up(full_route[order], priority_of_streets[order])
-
-        return priority_of_streets
-
-    def get_longest_q_street(self, order: int, priority_of_streets):
-        street_name = max(priority_of_streets[order], key=priority_of_streets[order].get)
-        return self.streets[street_name]
 
     def set_schedules(self, solution: Solution):
         for inter_id, schedule in solution.schedules.items():
@@ -144,7 +131,3 @@ class Graph:
         if self.debug:
             print("Car {} is riding down the {} street".format(car.id, car.current_street))
         car.remaining_time -= 1
-
-
-def priority_up(street_name, priority_dict):
-    priority_dict[street_name] += 1

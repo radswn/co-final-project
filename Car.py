@@ -16,7 +16,7 @@ class Car:
       time_to_intersection: {self.remaining_time}
       route: {' '.join(self.route)}""")
 
-    def full_route(self):
+    def route_without_last(self):
         return [self.current_street] + self.route[:-1]
 
     def has_finished(self) -> bool:
@@ -26,14 +26,8 @@ class Car:
         self.current_street = self.route.pop(0)
         self.remaining_time = next_street_travel_time
 
-    def get_next_street_name(self):
-        return self.route[0]
-
     def is_in_a_queue(self) -> bool:
         return self.remaining_time == 0
 
     def is_approaching_queue(self) -> bool:
         return self.remaining_time == 1
-
-    def car_is_done(self, order):
-        return len(self.route) <= order
