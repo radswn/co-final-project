@@ -3,8 +3,7 @@ from Intersection import Intersection
 
 
 class Street:
-    def __init__(self, id, name, time, start_id, end_id):
-        self.id = id
+    def __init__(self, name, time, start_id, end_id):
         self.name = name
         self.time = time
         self.start_id = start_id

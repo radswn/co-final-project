@@ -13,7 +13,7 @@ def load_stdin():
 
 
 def load_data(load_function) -> Graph:
-    cars = []
+    cars = set()
     streets = dict()
     intersections = dict()
 
@@ -24,13 +24,13 @@ def load_data(load_function) -> Graph:
         name = line[2]
         l = int(line[3])
 
-        street = Street(_, name, l, b, e)
+        street = Street(name, l, b, e)
         streets[street.name] = street
         street.setup_intersections(intersections)
 
     for _ in range(v):
         line = load_function().split()
         route = line[1:]
-        cars.append(Car(_, route))
+        cars.add(Car(_, route))
 
     return Graph(d, i, s, v, f, intersections, streets, cars)
