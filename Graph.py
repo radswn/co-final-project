@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Dict, List
+from typing import Dict, Set
 
 from Car import Car
 from Intersection import Intersection
@@ -9,7 +9,7 @@ from Street import Street
 
 class Graph:
     def __init__(self, d, i, s, v, f, intersections: Dict[int, Intersection], streets: Dict[str, Street],
-                 cars: List[Car]):
+                 cars: Set[Car]):
         self.duration = d
         self.intersections_nr = i
         self.streets_nr = s
@@ -22,6 +22,7 @@ class Graph:
         self.current_time = 0
         self.debug = False
         self.busy_intersections = set()
+        self.cars_to_remove = set()
 
         for car in self.cars:
             self.queue_car(car)
@@ -37,8 +38,6 @@ class Graph:
       streets: {''.join(street.__str__() for street in self.streets.values())}""")
 
     def queue_car(self, car: Car):
-        if self.debug:
-            print("Car {} moved to queue on street {}".format(car.id, car.current_street))
         self.busy_intersections.add(self.intersections[self.get_cars_current_street(car).end_id])
         self.get_cars_next_street(car).add_to_queue(car)
 
@@ -57,40 +56,28 @@ class Graph:
         for car in self.cars:
             self.drive(car)
 
+        for car in self.cars_to_remove:
+            self.cars.remove(car)
+        self.cars_to_remove.clear()
+
         self.current_time += 1
 
     def drive(self, car):
-        if car.is_in_a_queue():
-            if car.has_finished():
-                self.end_cars_travel(car)
-            else:
-                current_street = self.get_cars_current_street(car)
-                if self.has_green_light(current_street) and current_street.is_car_first_in_queue(car):
-                    next_street = self.streets[car.get_next_street_name()]
-                    self.leave_queue(car)
-                    car.drive_to_next_street(next_street.time)
-                    if self.debug:
-                        print("Car {} drove to the next street {}".format(car.id, car.current_street))
-                else:
-                    if self.debug:
-                        print("Car {} is waiting on street {}".format(car.id, car.current_street))
-        elif car.is_approaching_queue():
-            car.remaining_time -= 1
-            self.queue_car(car)
+        if car.is_approaching_queue():
+            self.handle_coming_to_queue(car)
+        elif car.is_in_a_queue():
+            self.cross_intersection_if_possible(car)
         else:
-            if self.debug:
-                print("Car {} is riding down the {} street".format(car.id, car.current_street))
-            car.remaining_time -= 1
+            self.drive_down_the_street(car)
 
-    def has_green_light(self, street) -> bool:
+    def has_green_light(self, street: Street) -> bool:
         intersection = self.intersections[street.end_id]
         return intersection.current_green == street.name
 
     def end_cars_travel(self, car: Car):
         if self.debug:
             print("Car {} has finished".format(car.id))
-        self.leave_queue(car)
-        self.cars.remove(car)
+        self.cars_to_remove.add(car)
         self.add_score()
 
     def add_score(self):
@@ -133,6 +120,30 @@ class Graph:
 
     def get_streets_intersection(self, street_name):
         return self.intersections[self.streets[street_name].end_id]
+
+    def handle_coming_to_queue(self, car: Car):
+        car.remaining_time -= 1
+        if car.has_finished():
+            self.end_cars_travel(car)
+        else:
+            self.queue_car(car)
+            self.cross_intersection_if_possible(car)
+
+    def cross_intersection_if_possible(self, car: Car):
+        current_street = self.get_cars_current_street(car)
+        if self.has_green_light(current_street) and current_street.is_car_first_in_queue(car):
+            next_street = self.get_cars_next_street(car)
+            car.drive_to_next_street(next_street.time)
+            if self.debug:
+                print("Car {} drove to the next street {}".format(car.id, car.current_street))
+        else:
+            if self.debug:
+                print("Car {} is waiting on street {}".format(car.id, car.current_street))
+
+    def drive_down_the_street(self, car: Car):
+        if self.debug:
+            print("Car {} is riding down the {} street".format(car.id, car.current_street))
+        car.remaining_time -= 1
 
 
 def priority_up(street_name, priority_dict):

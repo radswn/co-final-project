@@ -34,9 +34,6 @@ class Intersection:
             self.current_green = self.timetable[0]
 
     def change_light(self, current_time):
-        # nie wiem, czy to jest potrzebne, ale zostawię póki co
-        if self.empty_schedule():
-            return
         current_period_time = current_time % self.period
         self.current_green = self.timetable[current_period_time]
 
