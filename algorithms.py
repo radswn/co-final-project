@@ -1,4 +1,3 @@
-import math
 import random
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
@@ -97,8 +96,7 @@ def random_individual(graph: Graph, street_appearance_count) -> Solution:
     for intersection in graph.intersections.keys():
         streets = [s for s in graph.intersections[intersection].streets_in]
         np.random.permutation(streets)
-        schedule[intersection] = {street: math.floor(math.log2(street_appearance_count[street])) for street in
-                                  street_appearance_count.keys()}
+        schedule[intersection] = {street: 1 for street in streets if street in street_appearance_count.keys()}
     return Solution(schedule)
 
 
