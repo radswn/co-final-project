@@ -1,5 +1,6 @@
+import math
 import random
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from time import time
 
@@ -69,13 +70,22 @@ def hill_climbing(graph: Graph) -> Solution:
             current_solution = best_solution
 
 
+def counting_streets(graph: Graph):
+    street_appearance_count = defaultdict(int)
+    for car in graph.cars:
+        for street_name in car.full_route():
+            street_appearance_count[street_name] += 1
+    return street_appearance_count
+
+
 def random_individual(graph: Graph) -> Solution:
     schedule = {}
     for intersection in graph.intersections.keys():
         streets = [s for s in graph.intersections[intersection].streets_in]
         np.random.permutation(streets)
-        schedule[intersection] = {street: random.randint(1, 4) for street in streets}
-
+        schedule[intersection] = {street: 1 for street in streets}
+        # schedule[intersection] = {street: random.randint(1, 4) for street in streets}
+        # schedule[intersection] = {street: math.floor(math.log2(street_appearance_count[street])) for street in street_appearance_count.keys()}
     return Solution(schedule)
 
 
@@ -159,9 +169,14 @@ def define_new_best(graph: Graph, best_so_far: Solution, best_score: int, candid
         return best_so_far, best_score
 
 
+POPULATION_SIZE = 15
+GENERATIONS = 1000
+
+
 def genetic_algorithm(graph: Graph) -> Solution:
     timer_start = time()
 
+    # streets_app = counting_streets(graph)
     population, population_ratio = create_initial_population(graph)
 
     best_one = random_individual(graph)
