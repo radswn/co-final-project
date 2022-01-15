@@ -1,4 +1,3 @@
-import math
 import random
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
@@ -7,12 +6,13 @@ from time import time
 import numpy as np
 
 from Graph import Graph
-from Intersection import Intersection
 from Solution import Solution
 
 TIME_LIMIT = 300
-POPULATION_SIZE = 10
-GENERATIONS = 10
+POPULATION_SIZE = 20
+GENERATIONS = 20
+HC_NEIGHBORS = 10
+MUTATION_PROBABILITY = 0.2
 
 
 def is_time_ok(timer_start) -> bool:
@@ -37,22 +37,15 @@ def random_neighbour(sol: Solution) -> Solution:
     return solution
 
 
-def reverse_changes(graph: Graph, intersection: Intersection, street):
-    schedule = intersection.schedule
-    schedule[street] -= 1
-    intersection.set_schedule(schedule)
-
-
 def hill_climbing(graph: Graph) -> Solution:
     timer_start = time()
-    solution_zero = get_state_zero(graph)
-    best_score = approximate_fitness(graph, solution_zero)
-    current_solution = solution_zero
+    current_solution = get_state_zero(graph)
+    best_score = approximate_fitness(graph, current_solution)
     current_score = best_score
     best_solution = deepcopy(current_solution)
-    while True:
-        for _ in range(10):
 
+    while True:
+        for _ in range(HC_NEIGHBORS):
             if not is_time_ok(timer_start):
                 return current_solution
 
@@ -70,28 +63,47 @@ def hill_climbing(graph: Graph) -> Solution:
             current_solution = best_solution
 
 
+def genetic_algorithm(graph: Graph) -> Solution:
+    timer_start = time()
+    streets_appearance_count = counting_streets(graph)
+    population, population_ratio = create_initial_population(graph, streets_appearance_count)
+
+    best_one = random_individual(graph, streets_appearance_count)
+    best_score = approximate_fitness(graph, best_one)
+
+    for _ in range(GENERATIONS):
+        if not is_time_ok(timer_start):
+            return best_one
+
+        population_ratio = create_next_generation(graph, population_ratio)
+
+        candidate_for_best = max(population_ratio, key=population_ratio.get)
+        best_one, best_score = define_new_best(graph, best_one, best_score, candidate_for_best)
+
+    return best_one
+
+
 def counting_streets(graph: Graph):
     street_appearance_count = defaultdict(int)
     for car in graph.cars:
-        for street_name in car.full_route():
+        for street_name in car.route_without_last():
             street_appearance_count[street_name] += 1
     return street_appearance_count
 
 
-def random_individual(graph: Graph) -> Solution:
+def random_individual(graph: Graph, street_appearance_count) -> Solution:
     schedule = {}
     for intersection in graph.intersections.keys():
         streets = [s for s in graph.intersections[intersection].streets_in]
         np.random.permutation(streets)
-        schedule[intersection] = {street: 1 for street in streets}
-        # schedule[intersection] = {street: random.randint(1, 4) for street in streets}
-        # schedule[intersection] = {street: math.floor(math.log2(street_appearance_count[street])) for street in street_appearance_count.keys()}
+        schedule[intersection] = {street: 1 for street in street_appearance_count.keys()}
     return Solution(schedule)
 
 
 def mutation(sol: Solution) -> Solution:
     solution = deepcopy(sol)
-    intersection = random.choice(list(solution.schedules.keys()))
+    intersection = random.choice(
+        [inter_id for inter_id, schedule in solution.schedules.items() if len(schedule.keys()) > 1])
     schedule = solution.schedules[intersection]
     street = random.choice(list(schedule.keys()))
 
@@ -120,12 +132,12 @@ def crossover(sol1: Solution, sol2: Solution) -> (Solution, Solution):
     return Solution(child1_schedule), Solution(child2_schedule)
 
 
-def create_initial_population(graph: Graph):
+def create_initial_population(graph: Graph, streets_appearance_count):
     population = {}
     population_ratio = {}
 
     for _ in range(POPULATION_SIZE):
-        citizen = random_individual(graph)
+        citizen = random_individual(graph, streets_appearance_count)
         population[citizen] = approximate_fitness(graph, citizen)
 
     denominator = sum(population.values())
@@ -145,9 +157,9 @@ def create_next_generation(graph, population_ratio):
 
         child1, child2 = crossover(parent1, parent2)
 
-        if random.random() < 0.2:
+        if random.random() < MUTATION_PROBABILITY:
             child1 = mutation(child1)
-        if random.random() < 0.2:
+        if random.random() < MUTATION_PROBABILITY:
             child2 = mutation(child2)
 
         new_population[child1] = approximate_fitness(graph, child1)
@@ -169,32 +181,6 @@ def define_new_best(graph: Graph, best_so_far: Solution, best_score: int, candid
         return best_so_far, best_score
 
 
-POPULATION_SIZE = 15
-GENERATIONS = 1000
-
-
-def genetic_algorithm(graph: Graph) -> Solution:
-    timer_start = time()
-
-    # streets_app = counting_streets(graph)
-    population, population_ratio = create_initial_population(graph)
-
-    best_one = random_individual(graph)
-    best_score = approximate_fitness(graph, best_one)
-
-    for _ in range(GENERATIONS):
-
-        if not is_time_ok(timer_start):
-            return best_one
-
-        population_ratio = create_next_generation(graph, population_ratio)
-
-        candidate_for_best = max(population_ratio, key=population_ratio.get)
-        best_one, best_score = define_new_best(graph, best_one, best_score, candidate_for_best)
-
-    return best_one
-
-
 def approximate_fitness(graph: Graph, solution: Solution) -> float:
     percentage_schedules = dict()
     result = 0
@@ -211,9 +197,11 @@ def approximate_fitness(graph: Graph, solution: Solution) -> float:
         for street in route:
             multiplier, max_waiting_time = percentage_schedules[street]
             wait_time_sum = sum([_ for _ in range(max_waiting_time + 1)])
+
             expected_travel_time += multiplier * wait_time_sum
             if street != car.current_street:
                 expected_travel_time += graph.streets[street].time
+
         expected_travel_time += graph.streets[car.route[-1]].time
 
         result += max(graph.points + (graph.duration - expected_travel_time), 1)
