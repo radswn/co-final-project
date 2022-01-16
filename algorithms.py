@@ -2,6 +2,7 @@ import random
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from time import time
+from typing import Dict
 
 import numpy as np
 
@@ -9,9 +10,8 @@ from Graph import Graph
 from Solution import Solution
 
 TIME_LIMIT = 300
-POPULATION_SIZE = 20
-GENERATIONS = 20
 HC_NEIGHBORS = 10
+POPULATION_SIZE = 20
 MUTATION_PROBABILITY = 0.2
 
 
@@ -49,7 +49,7 @@ def genetic_algorithm(graph: Graph) -> Solution:
     best_one = random_individual(graph, streets_appearance_count)
     best_score = approximate_fitness(graph, best_one)
 
-    for _ in range(GENERATIONS):
+    while True:
         if not is_time_ok(timer_start):
             order_streets(graph, best_one)
             return best_one
@@ -59,15 +59,12 @@ def genetic_algorithm(graph: Graph) -> Solution:
         candidate_for_best = max(population_ratio, key=population_ratio.get)
         best_one, best_score = define_new_best(graph, best_one, best_score, candidate_for_best)
 
-    order_streets(graph, best_one)
-    return best_one
-
 
 def is_time_ok(timer_start) -> bool:
     return time() <= timer_start + TIME_LIMIT
 
 
-def count_streets(graph: Graph):
+def count_streets(graph: Graph) -> Dict[str, int]:
     street_appearance_count = defaultdict(int)
     for car in graph.cars:
         for street_name in car.route[:-1]:
@@ -169,7 +166,7 @@ def create_next_generation(graph, population_ratio):
     new_population = {}
     new_population_ratio = {}
 
-    for _ in range(POPULATION_SIZE):
+    for _ in range(POPULATION_SIZE // 2):
         parent1 = np.random.choice(list(population_ratio.keys()), p=list(population_ratio.values()))
         parent2 = np.random.choice(list(population_ratio.keys()), p=list(population_ratio.values()))
 
@@ -224,8 +221,3 @@ def approximate_fitness(graph: Graph, solution: Solution) -> float:
 
         result += max(graph.points + (graph.duration - expected_travel_time), 1)
     return result
-
-
-def save_to_file(letter, solution: Solution):
-    with open(f'solutions\\{letter}.txt', 'w+') as file:
-        file.write(solution.__str__())
