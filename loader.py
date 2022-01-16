@@ -3,11 +3,6 @@ from Graph import Graph
 from Street import Street
 
 
-def load_text_file(filename: str):
-    with open(filename, mode='r') as file:
-        return load_data(file.readline)
-
-
 def load_stdin():
     return load_data(input)
 
