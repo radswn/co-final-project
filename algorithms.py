@@ -15,28 +15,6 @@ HC_NEIGHBORS = 10
 MUTATION_PROBABILITY = 0.2
 
 
-def is_time_ok(timer_start) -> bool:
-    return time() <= timer_start + TIME_LIMIT
-
-
-def get_state_zero(graph: Graph) -> Solution:
-    schedule = {}
-    for intersection in graph.intersections.keys():
-        schedule[intersection] = OrderedDict()
-        for street_in in graph.intersections[intersection].streets_in:
-            schedule[intersection][street_in] = 1
-    return Solution(schedule)
-
-
-def random_neighbour(sol: Solution) -> Solution:
-    solution = deepcopy(sol)
-    intersection = random.choice(list(solution.schedules.keys()))
-    schedule = solution.schedules[intersection]
-    street = random.choice(list(schedule.keys()))
-    schedule[street] += 1
-    return solution
-
-
 def hill_climbing(graph: Graph) -> Solution:
     timer_start = time()
     current_solution = get_state_zero(graph)
@@ -65,7 +43,7 @@ def hill_climbing(graph: Graph) -> Solution:
 
 def genetic_algorithm(graph: Graph) -> Solution:
     timer_start = time()
-    streets_appearance_count = counting_streets(graph)
+    streets_appearance_count = count_streets(graph)
     population, population_ratio = create_initial_population(graph, streets_appearance_count)
 
     best_one = random_individual(graph, streets_appearance_count)
@@ -73,6 +51,7 @@ def genetic_algorithm(graph: Graph) -> Solution:
 
     for _ in range(GENERATIONS):
         if not is_time_ok(timer_start):
+            order_streets(graph, best_one)
             return best_one
 
         population_ratio = create_next_generation(graph, population_ratio)
@@ -80,15 +59,54 @@ def genetic_algorithm(graph: Graph) -> Solution:
         candidate_for_best = max(population_ratio, key=population_ratio.get)
         best_one, best_score = define_new_best(graph, best_one, best_score, candidate_for_best)
 
+    order_streets(graph, best_one)
     return best_one
 
 
-def counting_streets(graph: Graph):
+def is_time_ok(timer_start) -> bool:
+    return time() <= timer_start + TIME_LIMIT
+
+
+def count_streets(graph: Graph):
     street_appearance_count = defaultdict(int)
     for car in graph.cars:
-        for street_name in car.route_without_last():
+        for street_name in car.route[:-1]:
             street_appearance_count[street_name] += 1
     return street_appearance_count
+
+
+def order_streets(graph: Graph, solution: Solution):
+    order = dict()
+    for car in graph.cars:
+        route = car.route[:-1]
+        for i, street in enumerate(route):
+            if street not in order.keys():
+                order[street] = i
+
+    for inter_id, schedule in solution.schedules.items():
+        solution.schedules[inter_id] = sort_schedule(order, schedule)
+
+
+def sort_schedule(order, schedule):
+    return {k: v for k, v in sorted(schedule.items(), key=lambda x: order.get(x[0]))}
+
+
+def get_state_zero(graph: Graph) -> Solution:
+    schedule = {}
+    for intersection in graph.intersections.keys():
+        schedule[intersection] = OrderedDict()
+        for street_in in graph.intersections[intersection].streets_in:
+            schedule[intersection][street_in] = 1
+    return Solution(schedule)
+
+
+def random_neighbour(sol: Solution) -> Solution:
+    solution = deepcopy(sol)
+    intersection = random.choice(list(solution.schedules.keys()))
+    schedule = solution.schedules[intersection]
+    street = random.choice(list(schedule.keys()))
+    schedule[street] += 1
+    return solution
 
 
 def random_individual(graph: Graph, street_appearance_count) -> Solution:
@@ -192,14 +210,14 @@ def approximate_fitness(graph: Graph, solution: Solution) -> float:
 
     for car in graph.cars:
         expected_travel_time = 0
-        route = car.route_without_last()
+        route = car.route[:-1]
 
         for street in route:
             multiplier, max_waiting_time = percentage_schedules[street]
             wait_time_sum = sum([_ for _ in range(max_waiting_time + 1)])
 
             expected_travel_time += multiplier * wait_time_sum
-            if street != car.current_street:
+            if street != car.route[0]:
                 expected_travel_time += graph.streets[street].time
 
         expected_travel_time += graph.streets[car.route[-1]].time
